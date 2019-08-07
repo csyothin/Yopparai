@@ -1,0 +1,35 @@
+version: '3'
+services:
+  db:
+    image: postgres:9.6
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+  web:
+    build: .
+    command: /bin/sh -c "rm -f /myapp/tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - .:/myapp
+    ports:
+      - "3001:3000"
+    depends_on:
+      - db
+    environment:
+      RAILS_ENV: development
+  pgweb:
+    image: donnex/pgweb
+    links:
+      - db:db
+    ports:
+      - '8081:8080'
+    container_name: pgweb
+    volumes:
+      - pgweb-data:/opt/pgweb
+    depends_on:
+      - db
+volumes:
+  postgresql-data:
+    driver: local
+  pgweb-data:
+    driver: local
